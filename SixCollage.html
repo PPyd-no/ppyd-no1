@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi-Collage Maker V2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-color: #007bff;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --light-gray: #f8f9fa;
+      --gray-border: #dee2e6;
+      --text-color: #212529;
+      --slot-background: #ffffff; /* สีพื้นหลังใหม่สำหรับช่องรูปภาพ */
+      --slot-border-color: #w9120; /* สีขอบใหม่สำหรับช่องรูปภาพ */
+    }
+
+    body {
+      font-family: 'Kanit', sans-serif;
+      background-color: var(--light-gray);
+      margin: 0;
+      padding: 1rem;
+    }
+
+    .app-container {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .controls-card {
+      padding: 1rem 1.5rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 2rem;
+    }
+
+    .main-controls {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .main-controls button {
+      font-family: 'Kanit', sans-serif;
+      font-size: 1rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.2s;
+      width: 100%;
+    }
+
+    .main-controls button:active {
+      transform: scale(0.95);
+    }
+
+    #add-collage-btn {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    #download-all-btn {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .global-text-controls {
+      margin-top: 1.5rem;
+      border-top: 1px solid var(--gray-border);
+      padding-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .global-text-controls label {
+      font-weight: 600;
+    }
+
+    .global-text-controls textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--gray-border);
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .font-size-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .font-size-control input[type='range'] {
+      flex-grow: 1;
+    }
+
+    #collage-list-container {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .collage-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid var(--gray-border);
+    }
+
+    .collage-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1.5rem;
+      background-color: #f7f7f7;
+      border-bottom: 1px solid var(--gray-border);
+    }
+
+    .collage-card-header h3 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .remove-btn {
+      background-color: var(--danger-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      line-height: 30px;
+      text-align: center;
+    }
+
+    .collage-card-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      padding: 1.5rem;
+    }
+
+    .card-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .card-controls label {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .card-controls input {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid var(--gray-border);
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    .preview-area {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 1 ;
+        background: #e9ecef;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 8px;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .collage-grid {
+        display: grid;
+        width: 100%;
+        height: 100%;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 5px;
+        box-sizing: border-box;
+        background-color: var(--slot-border-color);
+        padding: 5px;
+        border-radius: 8px;
+    }
+
+    .collage-grid .slot {
+      background: var(--slot-background);
+      border-radius: 2px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid var(--slot-border-color);
+    }
+
+    .collage-grid .slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .text-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 95%;
+      background: none;
+      color: white;
+      font-weight: bold;
+      padding: 10px;
+      text-align: center;
+      white-space: pre-line;
+      line-height: 1.4;
+      pointer-events: none;
+      box-sizing: border-box;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 0.5rem;
+      }
+
+      .main-controls {
+        flex-direction: column;
+      }
+
+      .collage-card-body {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-area {
+        margin-bottom: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <h1>สร้างหลายคอลลาจในครั้งเดียว 🖼️✨</h1>
+    </header>
+
+    <div class="controls-card">
+      <div class="main-controls">
+        <button id="add-collage-btn">➕ เพิ่มคอลลาจ (3x2)</button>
+        <button id="download-all-btn">📂 ดาวน์โหลดทั้งหมด</button>
+      </div>
+      <div class="global-text-controls">
+        <div>
+          <label for="global-text-input">ใส่ข้อความ (ใช้กับทุกคอลลาจ):</label>
+          <textarea id="global-text-input" rows="3"></textarea>
+        </div>
+        <div class="font-size-control">
+          <label for="global-font-size-slider">ขนาด:</label>
+          <input type="range" id="global-font-size-slider" min="10" max="120" value="28" />
+          <span id="global-font-size-value">28px</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="collage-list-container"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const addCollageBtn = document.getElementById('add-collage-btn');
+      const downloadAllBtn = document.getElementById('download-all-btn');
+      const collageListContainer = document.getElementById('collage-list-container');
+      const globalTextInput = document.getElementById('global-text-input');
+      const globalFontSizeSlider = document.getElementById('global-font-size-slider');
+      const globalFontSizeValue = document.getElementById('global-font-size-value');
+
+      let collages = [];
+      let nextId = 0;
+      let globalText = globalTextInput.value;
+      let globalFontSize = globalFontSizeSlider.value;
+
+      globalFontSizeValue.textContent = `${globalFontSize}px`;
+
+      function createCollageHTML(collage) {
+        return `
+        <div class="collage-card" id="card-${collage.id}" data-id="${collage.id}">
+          <div class="collage-card-header">
+            <h3>คอลลาจ #${collage.id}</h3>
+            <button class="remove-btn" title="ลบคอลลาจนี้">&times;</button>
+          </div>
+          <div class="collage-card-body">
+            <div class="card-controls">
+              <label for="uploader-${collage.id}">อัปโหลดรูปภาพ (เลือกได้หลายรูป):</label>
+              <input type="file" class="image-uploader" id="uploader-${collage.id}" accept="image/*" multiple />
+            </div>
+            <div class="preview-area" id="preview-${collage.id}">
+              <div class="collage-grid"></div>
+              <div class="text-overlay" style="font-size: ${globalFontSize}px;">${globalText}</div>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      function renderGridForCollage(collageId) {
+        const collageData = collages.find(c => c.id === collageId);
+        const card = document.getElementById(`card-${collageId}`);
+        if (!collageData || !card) return;
+        const gridContainer = card.querySelector('.collage-grid');
+        gridContainer.innerHTML = '';
+        const imagesToRender = collageData.images;
+        for (let i = 0; i < 6; i++) {
+          const slot = document.createElement('div');
+          slot.className = 'slot';
+          if (imagesToRender.length > 0) {
+            const imageIndex = i % imagesToRender.length; // วนซ้ำรูปภาพที่มี
+            const img = document.createElement('img');
+            img.src = imagesToRender[imageIndex];
+            slot.appendChild(img);
+          }
+          gridContainer.appendChild(slot);
+        }
+      }
+
+      function addNewCollageCard(initialData = {}) {
+        nextId++;
+        const newCollage = {
+          id: nextId,
+          images: initialData.images || [],
+        };
+        collages.push(newCollage);
+        collageListContainer.insertAdjacentHTML('beforeend', createCollageHTML(newCollage));
+        renderGridForCollage(newCollage.id);
+        return newCollage;
+      }
+
+      globalTextInput.addEventListener('input', () => {
+        globalText = globalTextInput.value;
+        document.querySelectorAll('.text-overlay').forEach(overlay => {
+          overlay.textContent = globalText;
+        });
+      });
+
+      globalFontSizeSlider.addEventListener('input', () => {
+        globalFontSize = globalFontSizeSlider.value;
+        globalFontSizeValue.textContent = `${globalFontSize}px`;
+        document.querySelectorAll('.text-overlay').forEach(overlay => {
+          overlay.style.fontSize = `${globalFontSize}px`;
+        });
+      });
+
+      addCollageBtn.addEventListener('click', () => {
+        addNewCollageCard();
+      });
+
+      collageListContainer.addEventListener('click', event => {
+        if (event.target.classList.contains('remove-btn')) {
+          const card = event.target.closest('.collage-card');
+          const collageId = Number(card.dataset.id);
+          const collageToRemove = collages.find(c => c.id === collageId);
+          if (collageToRemove) {
+            collageToRemove.images.forEach(url => URL.revokeObjectURL(url));
+          }
+          collages = collages.filter(c => c.id !== collageId);
+          card.remove();
+        }
+      });
+
+      collageListContainer.addEventListener('change', event => {
+        const card = event.target.closest('.collage-card');
+        if (!card || !event.target.classList.contains('image-uploader')) return;
+        const collageId = Number(card.dataset.id);
+        const sourceCollageData = collages.find(c => c.id === collageId);
+        const files = Array.from(event.target.files);
+
+        if (files.length === 0) return;
+
+        sourceCollageData.images.forEach(url => URL.revokeObjectURL(url));
+
+        const allImageUrls = files.map(file => URL.createObjectURL(file));
+        
+        sourceCollageData.images = allImageUrls.slice(0, 6);
+        renderGridForCollage(collageId);
+
+        let remainingImages = allImageUrls.slice(6);
+        let currentCollageIndex = collages.indexOf(sourceCollageData);
+
+        for (let i = collages.length - 1; i > currentCollageIndex; i--) {
+            collages[i].images.forEach(url => URL.revokeObjectURL(url));
+            document.getElementById(`card-${collages[i].id}`).remove();
+            collages.splice(i, 1);
+        }
+
+        while (remainingImages.length > 0) {
+          let nextChunk = remainingImages.slice(0, 6);
+          remainingImages = remainingImages.slice(6);
+
+          // เติมรูปภาพที่เหลือจาก allImageUrls ที่ยังไม่ถูกใช้ในคอลลาจปัจจุบันหรือคอลลาจก่อนหน้า
+          // อัปเดต: เปลี่ยนตรรกะการเติมเพื่อให้ใช้รูปภาพจาก allImageUrls วนซ้ำโดยไม่ซ้ำกันในคอลลาจ
+          let imagesInCurrentNewCollage = [...nextChunk];
+          let globalImagePoolIndex = 0; // เพื่อติดตามรูปภาพที่จะนำมาเติมจาก allImageUrls
+
+          while (imagesInCurrentNewCollage.length < 6) {
+              if (globalImagePoolIndex >= allImageUrls.length) {
+                  // ถ้าใช้รูปภาพทั้งหมดใน allImageUrls หมดแล้ว ให้วนกลับไปใช้ใหม่ตั้งแต่ต้น
+                  globalImagePoolIndex = 0;
+              }
+              const potentialPaddingImage = allImageUrls[globalImagePoolIndex];
+              
+              // ตรวจสอบว่ารูปภาพนี้ยังไม่ถูกใช้ใน currentNewCollage นี้หรือไม่
+              if (!imagesInCurrentNewCollage.includes(potentialPaddingImage)) {
+                  imagesInCurrentNewCollage.push(potentialPaddingImage);
+              }
+              globalImagePoolIndex++;
+          }
+          addNewCollageCard({ images: imagesInCurrentNewCollage });
+        }
+      });
+
+      downloadAllBtn.addEventListener('click', async () => {
+        if (collages.length === 0) return alert('กรุณาสร้างคอลลาจก่อนครับ');
+        const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+        
+        downloadAllBtn.textContent = 'กำลังดาวน์โหลด...';
+        downloadAllBtn.disabled = true;
+
+        for (const collage of collages) {
+          const element = document.getElementById(`preview-${collage.id}`);
+          if (!element) continue;
+          try {
+            const canvas = await html2canvas(element, {
+              scale: 2, // เพิ่มความละเอียดเป็นสองเท่าเพื่อความคมชัดในการดาวน์โหลด
+              backgroundColor: null,
+              useCORS: true,
+            });
+            const link = document.createElement('a');
+            link.download = `collage_${collage.id}_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            await sleep(500);
+          } catch (error) {
+            console.error(`เกิดข้อผิดพลาดในการดาวน์โหลดคอลลาจ #${collage.id}:`, error);
+            alert(`ไม่สามารถดาวน์โหลดคอลลาจ #${collage.id} ได้`);
+          }
+        }
+        downloadAllBtn.textContent = '📂 ดาวน์โหลดทั้งหมด';
+        downloadAllBtn.disabled = false;
+      });
+
+      // สร้างคอลลาจแรก
+      addCollageBtn.click();
+    });
+  </script>
+</body>
+</html>
